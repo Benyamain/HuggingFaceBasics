@@ -47,3 +47,28 @@ with torch.no_grad():
     # List comprehension
     labels = [model.config.id2label[label_id] for label_id in labels.tolist()]
     print('Labels:', labels)
+
+# Assuming the model is finetuned and you want to save and load it
+# save_directory = 'saved'
+# tokenizer.save_pretrained(save_directory)
+# model.save_pretrained(save_directory)
+# tokenizer = AutoTokenizer.from_pretrained(save_directory)
+# model = AutoModelForSequenceClassification.from_pretrained(save_directory)
+
+model_name = 'oliverguhr/german-sentiment-bert'
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForSequenceClassification.from_pretrained(model_name)
+
+X_train_german = ['Mit keinem guten Ergebnis', 'Das was unfair', 'Das ist gar nicht mal so gut', 'nicht so schlecht wie erwartet', 'Das war gut!', 'Sie wie ein wie Auto.']
+batch = tokenizer(X_train_german, padding = True, truncation = True, max_length = 512, return_tensors = 'pt')
+
+with torch.no_grad():
+    outputs = model(**batch)
+    print('Outputs german:', outputs)
+    predictions = F.softmax(outputs.logits, dim = 1)
+    print('Predictions german:', predictions)
+    labels = torch.argmax(predictions, dim = 1)
+    print('Labels german:', labels)
+    # List comprehension
+    labels = [model.config.id2label[label_id] for label_id in labels.tolist()]
+    print('Labels german:', labels)
