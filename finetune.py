@@ -37,7 +37,7 @@ train_texts, val_texts, train_labels, val_labels = train_test_split(train_texts,
 
 def IMDbDataset(Dataset):
     
-    def __init(self, encodings, labels):
+    def __init__(self, encodings, labels):
         self.encodings = encodings
         self.labels = labels
 
