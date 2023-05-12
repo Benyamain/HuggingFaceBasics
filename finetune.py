@@ -4,6 +4,9 @@ import torch
 from torch.utils.data import Dataset
 from transformers import DistilBertTokenizerFast, DistilBertForSequenceClassification
 from transformers import Trainer, TrainingArguments
+from torch.utils.data import DataLoader
+# A optimizer
+from transformers import AdamW
 
 # Prepare dataset
 # Load pretrained Tokenizer call it with dataset -> encoding
@@ -51,3 +54,41 @@ tokenizer = DistilBertTokenizerFast.from_pretrained(model_name)
 
 # Ensure that all of our sequences are padded to the same length and are truncated to be no longer than model's
 # maximum input length. This will allow us to feed batches of sequences into the model at the same time.
+train_encodings = tokenizer(train_texts, truncation = True, padding = True)
+val_encodings = tokenizer(val_texts, truncation = True, padding = True)
+test_encodings = tokenizer(test_texts, truncation = True, padding = True)
+
+train_dataset = IMDbDataset(train_encodings, train_labels)
+val_dataset = IMDbDataset(val_encodings, val_labels)
+test_dataset = IMDbDataset(test_encodings, test_labels)
+
+training_args = TrainingArguments(output_dir = './results', num_train_epochs = 2, per_device_train_batch_size = 16, per_device_eval_batch_size = 64, warmup_steps = 500, learning_rate = 5e-5, weight_decay = 0.01, logging_dir = './logs', logging_steps = 10)
+
+model = DistilBertForSequenceClassification.from_pretrained(model_name)
+
+trainer = Trainer(model = model, args = training_args, train_dataset = train_dataset, eval_dataset = val_dataset)
+
+trainer.train()
+
+# If you want to do this manually
+device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+model = DistilBertForSequenceClassification.from_pretrained(model_name)
+model.to(device)
+model.train()
+
+train_loader = DataLoader(train_dataset, batch_size = 16, shuffle = True)
+optim = AdamW(model.parameters(), lr = 5e-5)
+num_train_epochs = 2
+for epoch in range(num_train_epochs):
+    for batch in train_loader:
+        optim.zero_grad()
+        input_ids = batch['input_ids'].to(device)
+        attention_mask = batch['attention_mask'].to(device)
+        labels = batch['labels'].to(device)
+
+        outputs = model(input_ids, attention_mask = attention_mask, labels = labels)
+        loss = outputs[0]
+        loss.backward()
+        optim.step()
+
+model.eval()
