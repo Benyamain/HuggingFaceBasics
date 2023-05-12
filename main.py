@@ -61,6 +61,12 @@ model = AutoModelForSequenceClassification.from_pretrained(model_name)
 
 X_train_german = ['Mit keinem guten Ergebnis', 'Das was unfair', 'Das ist gar nicht mal so gut', 'nicht so schlecht wie erwartet', 'Das war gut!', 'Sie wie ein wie Auto.']
 batch = tokenizer(X_train_german, padding = True, truncation = True, max_length = 512, return_tensors = 'pt')
+print('Batch german:', batch)
+
+# If return_tensors was never put in
+# batch = tokenizer(X_train_german, padding = True, truncation = True, max_length = 512)
+# batch = torch.tensor(batch['input_ids'])
+# Do not need to unpack the model so remove the **
 
 with torch.no_grad():
     outputs = model(**batch)
