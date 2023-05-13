@@ -30,8 +30,8 @@ def read_imdb_split(split_dir):
 
 # Large Movie Review Datset
 # https://ai.stanford.edu/~amaas/data/sentiment/
-train_texts, train_labels = read_imdb_split('aclImdb/train')
-test_texts, test_labels = read_imdb_split('aclImdb/test')
+train_texts, train_labels = read_imdb_split('train')
+test_texts, test_labels = read_imdb_split('test')
 
 train_texts, val_texts, train_labels, val_labels = train_test_split(train_texts, train_labels, test_size = 0.2)
 
@@ -42,7 +42,7 @@ def IMDbDataset(Dataset):
         self.labels = labels
 
     def __getitem__(self, idx):
-        item = {ley: torch.tensor(val[idx]) for key, val in self.encodings.items()}
+        item = {key: torch.tensor(val[idx]) for key, val in self.encodings.items()}
         item['labels'] = torch.tensor(self.labels[idx])
         
         return item
